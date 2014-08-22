@@ -40,8 +40,23 @@ def extract_names(filename):
   followed by the name-rank strings in alphabetical order.
   ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
   """
-  # +++your code here+++
-  return
+  # let's read the file into memory once and close it.
+  with open(filename) as f:
+    fileContents = f.read()
+  
+  #find the year
+  year = re.findall(r'Popularity in (\d\d\d\d)',fileContents)[0]
+  
+  #get all the names 
+  names = re.findall(r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', fileContents)
+  nameList = []
+  for name in names: 
+    nameList.append( name[1] + " " + name[0])
+    nameList.append( name[2] + " " + name[0])
+  nameList.sort()
+  
+  nameList.insert(0, year)
+  return nameList
 
 
 def main():
@@ -49,7 +64,7 @@ def main():
   # Make a list of command line arguments, omitting the [0] element
   # which is the script itself.
   args = sys.argv[1:]
-
+  
   if not args:
     print 'usage: [--summaryfile] file [file ...]'
     sys.exit(1)
@@ -63,6 +78,8 @@ def main():
   # +++your code here+++
   # For each filename, get the names, then either print the text output
   # or write it to a summary file
+  for file in args:
+    print extract_names(file)
   
 if __name__ == '__main__':
   main()
