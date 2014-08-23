@@ -11,6 +11,7 @@ import re
 import os
 import shutil
 import commands
+import uuid
 
 """Copy Special exercise
 The copyspecial.py program takes one or more directories as its arguments. 
@@ -35,11 +36,35 @@ zip those files up into the given zipfile
 # +++your code here+++
 # Write functions and modify main() to call them
 def get_special_paths(dir):
-	files = os.listdir(dir)
-	fileList = []
-	for filename in files:
-		fileList.append(os.path.join(dir,filename))
-	return fileList
+  fullPath = os.path.abspath(dir)
+  files = os.listdir(fullPath)
+  fileList = []
+  for filename in files:
+    if None != re.search('__\w+__', filename) :
+      fileList.append(os.path.join(fullPath,filename))
+  return fileList
+  
+def copy_to(paths, dir):
+  if not os.path.exists(dir):
+    # if we don't do this the copy util could create a file with the same name as dir
+    raise Exception('Destination directory does not exist: \"' + dir + '\"')
+  for filename in paths:
+    shutil.copy(filename, dir) 
+  return
+
+def zip_to(paths, zippath):
+  currdir= os.getcwd()
+  tempdir = os.path.abspath('.\\' + uuid.uuid4().hex)
+  try:
+    os.mkdir(tempdir)
+    os.chdir(tempdir)
+    copy_to(paths, tempdir)
+    shutil.make_archive(zippath, 'zip', base_dir='.')
+  finally:
+    os.chdir(currdir)
+    shutil.rmtree(tempdir)
+  return
+  
 
 
 def main():
@@ -58,22 +83,30 @@ def main():
   # The args array is left just containing the dirs.
   todir = ''
   if len(args) > 0 and args[0] == '--todir':
-    todir = args[1]
+    todir = os.path.abspath(args[1])
     del args[0:2]
 
   tozip = ''
   if len(args) > 0  and args[0] == '--tozip':
-    tozip = args[1]
+    tozip = os.path.abspath(args[1])
     del args[0:2]
 
-  if '' == todir :
+  if len(args) <= 0:
     print "error: must specify one or more dirs"
     sys.exit(1)
 
   # +++your code here+++
   # Call your functions
+  #for now we're just piping the function through for testing purposes. 
+  paths= []
+  for directory in args:
+    paths += get_special_paths(directory)
   
-  print get_special_paths(todir)
-  
+  if '' != todir:
+    copy_to(paths, todir)
+  if '' != tozip: 
+    zip_to(paths,tozip) 
+  return
+ 
 if __name__ == "__main__":
   main()
