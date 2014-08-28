@@ -17,6 +17,12 @@ Given an apache logfile, find the puzzle urls and download the images.
 Here's what a puzzle url looks like:
 10.254.254.28 - - [06/Aug/2007:00:13:48 -0700] "GET /~foo/puzzle-bar-aaab.jpg HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
+def second_word(s): 
+  match = re.search(r'-\w+-(?P<desired_word>\w+).jpg', s)
+  if not match: 
+    return s
+  else: 
+    return match.group('desired_word')
 
 def read_urls(filename):
   """Returns a list of the puzzle urls from the given log file,
@@ -49,7 +55,7 @@ def read_urls(filename):
     if url not in cleanUrl: 
       cleanUrl[url] = server + url
   
-  return sorted(cleanUrl.values())
+  return sorted(cleanUrl.values(), key=second_word)
   
 
 def download_images(img_urls, dest_dir):
